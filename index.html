@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>チェス・タクティクス</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="board-wrap">
+      <div id="board" class="board"></div>
+      <div id="menu" class="action-menu hidden"></div>
+    </section>
+    <!-- 試合前：デッキ構築 -->
+    <aside id="setup-panel" class="panel">
+      <h1>チェス・タクティクス</h1>
+
+      <!-- モード選択 -->
+      <div class="mode-select">
+        <button data-mode="cpu"><b>1人で遊ぶ</b><small>CPU と対戦</small></button>
+        <button data-mode="net"><b>友だちと遊ぶ</b><small>ネット対戦</small></button>
+        <button data-mode="watch"><b>観戦</b><small>CPU 同士</small></button>
+        <button data-mode="pvp"><b>この端末で2人</b><small>交代で操作</small></button>
+      </div>
+
+      <label class="toggle field-pick">戦場
+        <select id="field-select">
+          <option value="random">ランダム</option>
+          <option value="grass">草原</option>
+          <option value="waste">荒れ地</option>
+          <option value="snow">雪原</option>
+          <option value="desert">砂漠</option>
+          <option value="classic">チェス盤</option>
+        </select>
+      </label>
+
+      <!-- ネット対戦：部屋を作る・合言葉で入る -->
+      <div id="net-panel" class="hidden">
+        <h2 class="section-title">友だちとネット対戦</h2>
+        <div id="net-lobby">
+          <p class="muted setup-help">どちらかが「部屋を作る」を押して、出てきた合言葉（4文字）を友だちに送る。友だちは合言葉を入れて「入る」。3人目からは観戦になる。</p>
+          <button id="btn-net-create" class="primary">部屋を作る</button>
+          <div class="net-join">
+            <input id="net-code" maxlength="4" placeholder="合言葉" autocomplete="off">
+            <button id="btn-net-join">入る</button>
+          </div>
+        </div>
+        <div id="net-room" class="hidden">
+          <div class="net-code-box">合言葉 <b id="net-code-show"></b> <button id="btn-net-copy">リンクをコピー</button></div>
+          <div id="net-msg" class="status"></div>
+          <button id="btn-net-leave">部屋を出る</button>
+        </div>
+        <div id="net-error" class="setup-msg"></div>
+      </div>
+
+      <!-- 1人・2人：デッキ構築 -->
+      <div id="deck-builder">
+        <h2 class="section-title">デッキ構築</h2>
+        <div id="setup-title" class="status"></div>
+        <p class="muted setup-help">下のキャラを選んで、光っている自分の陣営のマスに置く。置いたキャラを押すと持ち上げて動かせる。右クリックで外す。移動速度の合計が大きい側が先攻。</p>
+        <div id="palette" class="palette"></div>
+        <div id="setup-msg" class="setup-msg"></div>
+        <div class="buttons">
+          <button id="btn-default">おまかせ配置</button>
+          <button id="btn-random">ランダム編成</button>
+          <button id="btn-clear">全部はずす</button>
+        </div>
+        <button id="btn-ready" class="primary">配置完了</button>
+      </div>
+
+      <!-- 観戦：CPU 同士 -->
+      <div id="watch-panel" class="hidden">
+        <h2 class="section-title">CPU 同士の対戦を観戦</h2>
+        <p class="muted setup-help">白も黒も CPU が動かす。観戦中は透明のキャラや罠も全部見える。</p>
+        <div class="watch-options">
+          <label><input type="radio" name="watch-deck" value="default" checked> 両方おまかせ配置</label>
+          <label><input type="radio" name="watch-deck" value="random"> 両方ランダム編成</label>
+          <label><input type="radio" name="watch-deck" value="mine"> 白は自分のデッキ・黒はランダム</label>
+        </div>
+        <label class="toggle">速さ
+          <select id="watch-speed">
+            <option value="1500">ゆっくり</option>
+            <option value="700" selected>ふつう</option>
+            <option value="250">速い</option>
+            <option value="60">とても速い</option>
+          </select>
+        </label>
+        <button id="btn-watch" class="primary">観戦スタート</button>
+      </div>
+    </aside>
+
+    <!-- 試合中 -->
+    <aside id="play-panel" class="panel hidden">
+      <h1>チェス・タクティクス</h1>
+      <div id="status" class="status"></div>
+      <div id="pips" class="pips"></div>
+      <div id="territory" class="territory-count"></div>
+      <div id="reinforce" class="reinforce"></div>
+      <button id="btn-end" class="primary">ターン終了</button>
+      <div id="info" class="info"></div>
+      <div class="buttons">
+        <button id="btn-undo">一手戻す</button>
+        <button id="btn-new">新しいゲーム</button>
+        <button id="btn-flip">盤を反転</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="cpu-toggle"> CPU と対戦（CPU は黒）</label>
+      <label class="toggle">移動のしかた
+        <select id="move-input">
+          <option value="tap">行き先を押す</option>
+          <option value="trace">道をなぞる（1マスずつ・ドラッグ）</option>
+        </select>
+      </label>
+      <label class="toggle">CPU の速さ
+        <select id="cpu-speed">
+          <option value="1500">ゆっくり</option>
+          <option value="700" selected>ふつう</option>
+          <option value="250">速い</option>
+          <option value="60">とても速い</option>
+        </select>
+      </label>
+      <h2>ログ</h2>
+      <ol id="log" class="log"></ol>
+    </aside>
+  </main>
+
+  <script src="js/units.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/net.js"></script>
+</body>
+</html>
